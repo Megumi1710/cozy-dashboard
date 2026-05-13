@@ -212,24 +212,36 @@ elif menu == "✨ Signup":
 
     st.title("✨ Create Account")
 
-    new_user = st.text_input("Username")
-    new_pass = st.text_input("Password", type="password")
+    new_user = st.text_input("Create Username")
+    new_pass = st.text_input("Create Password", type="password")
 
     if st.button("Create Account 🌸"):
 
         users = pd.read_csv("users.csv")
 
-        if new_user in users["username"].values:
-            st.error("Username already exists 💀")
+        # remove spaces
+        new_user = new_user.strip()
+        new_pass = new_pass.strip()
 
-        elif new_user == "" or new_pass == "":
+        if new_user == "" or new_pass == "":
             st.warning("Please fill all fields")
 
+        elif new_user in users["username"].astype(str).values:
+            st.error("Username already exists 💀")
+
         else:
-            users.loc[len(users)] = [new_user, new_pass]
+
+            new_data = pd.DataFrame({
+                "username": [new_user],
+                "password": [new_pass]
+            })
+
+            users = pd.concat([users, new_data], ignore_index=True)
+
             users.to_csv("users.csv", index=False)
 
             st.success("Account Created Successfully ✨")
+            st.write("Now go to Login page 🌸")
 
 # =====================================================
 # LOGIN
@@ -239,13 +251,22 @@ elif menu == "🔐 Login":
 
     st.title("🌙 Login")
 
-    username = st.text_input("Enter Username")
-    password = st.text_input("Enter Password", type="password")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
 
     if st.button("Login ✨"):
 
         users = pd.read_csv("users.csv")
 
+        # remove spaces
+        username = username.strip()
+        password = password.strip()
+
+        # convert columns to string
+        users["username"] = users["username"].astype(str)
+        users["password"] = users["password"].astype(str)
+
+        # check login
         user = users[
             (users["username"] == username) &
             (users["password"] == password)
@@ -260,7 +281,6 @@ elif menu == "🔐 Login":
 
         else:
             st.error("Wrong username or password 😭")
-
 # =====================================================
 # DASHBOARD
 # =====================================================
